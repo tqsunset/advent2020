@@ -81,3 +81,24 @@
   (count-tree-on-path pattern 3 1)
   (->> (map #(apply count-tree-on-path pattern %) [[1 1] [3 1] [5 1] [7 1] [1 2]])
        (apply *)))
+
+
+;;Day 4
+(defn vec-data [str]
+  (update (string/split str #":") 0 keyword))
+
+(def day04-data
+  (map #(string/split % #" |\n") (string/split (slurp "resources/day04.txt") #"\n\n")))
+
+(defn map-data [data]
+  (reduce (fn [acc coll]
+           (conj acc (apply merge {} (map vec-data coll))))
+         [] data))
+
+(defn valid-document? [passport]
+  "해당 맵이 조건에 맞는지 확인"
+  (->> (map #(get passport %) [:byr :iyr :eyr :hgt :hcl :ecl :pid])
+       (every? (complement nil?))))
+
+(defn count-valid-document [data]
+  (count (filter true? (map valid-document? (map-data data)))))
