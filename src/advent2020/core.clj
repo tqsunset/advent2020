@@ -5,8 +5,11 @@
   (string/split-lines (slurp path)))
 
 ;;Day 1-1
-(defn list-numb [path]
-  (map read-string (listify-txt path)))
+(defn read-numbers [path]
+  (->> (slurp path)
+       (string/split-lines)
+       (map #(Integer/parseInt %))
+       set))
 
 (defn day0101 [sum numbs]
   "finds numbers in numbs that sums into sum"
@@ -14,10 +17,20 @@
     (set numbs)
     (set (map #(- sum %) numbs))))
 
-;Day 1-2 :A+B = 2020 - C
-(let [numbs (list-numb "resources/day01.txt")
+; A+B = 2020 - C
+; my solulution (36.99 msec)
+(let [numbs (read-numbers "resources/day01.txt")
       right (map #(- 2020 %) numbs)]
   (apply * (apply clojure.set/union (filter (complement empty?) (map #(day0101 % numbs) right)))))
+
+; solution with for - more efficient (0.82 msec)
+(let [numbs (read-numbers "resources/day01.txt")]
+  (for [a numbs
+        b numbs
+        :let [c (- 2020 a b)]
+        :when (< a b c)
+        :when (contains? numbs c)]
+    [(* a b c)]))
 
 ;;Day 2-1
 (defn password-old? [min max character password]
@@ -112,7 +125,7 @@
        (contains? #{"amb" "blu" "brn" "gry" "grn" "hzl" "oth"} ecl) ;ecl
        (re-matches #"[0-9]{9}" pid)                         ;pid
        )
-  )
+  )"FBFBBFFRLRFBFBBFFRLR"
 
 (comment
   (->> (slurp "resources/day04.txt")
@@ -122,3 +135,50 @@
        count))
 
 
+;;Day 5
+
+(defn get-row [rs]
+  (loop [letters rs
+         [start end] [0 127]]
+    (if (seq letters)
+      (let [half (/ (- (inc end) start) 2)]
+        (case (first letters)
+          \F (recur (rest letters) [start (+ start (dec half))])
+          \B (recur (rest letters) [(+ start half) end])))
+      start))
+  )
+
+(defn get-coll [cs]
+  (loop [letters cs
+         [start end] [0 7]]
+    (if (seq letters)
+      (let [half (/ (- (inc end) start) 2)]
+        (case (first letters)
+          \L (recur (rest letters) [start (+ start (dec half))])
+          \R (recur (rest letters) [(+ start half) end])))
+      start))
+  )
+
+;1st loop (input) : letters "FBBFFFB", range [0 127]
+;2nd loop: letters "BBFFFB", range [0 63]
+;3rd loop: letters "BFFFB", range [32 63]
+;4rd loop: letters "FFFB", range [48 63]
+;5th loop: letters "FFB", range [48 55]
+;6th loop: letters "FB", range [48 51]
+;7th loop: letters "B", range [48 49]
+;8th loop: letters (), [49 49] -> output: 49
+
+(defn seat-ids [path]
+  (->> path
+      slurp
+      (split #"\n")
+      (map #(rest (re-find #"([B|F]{7})([L|R]{3})" %)))
+      (map (fn [seat] [(get-row (first seat)) (get-coll (second seat))]))
+      (map #(+ (second %) (* 8 (first %))))
+      set))
+
+(comment
+  ;to get my seat ID
+  (clojure.set/difference
+   (set (range 96 (inc 911)))
+   (seat-ids "resources/day05.txt")))
