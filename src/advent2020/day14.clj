@@ -1,5 +1,4 @@
-(ns advent2020.day14
-  (:require [advent2020.core :refer :all]))
+(ns advent2020.day14)
 
 (def small "mask = 000000000000000000000000000000X1001X\nmem[42] = 100\nmask = 00000000000000000000000000000000X0XX\nmem[26] = 1")
 (def large (slurp "resources/day14.txt"))
@@ -96,8 +95,8 @@
   (reduce
     (fn [acc {:keys [mask address value]}]
       (if (some? mask)
-        (do (println ":mask " mask) (assoc acc :mask mask))
-        (do (println "g") (apply assoc acc (interleave (address-list (acc :mask) address) (repeat value))))))
+        (assoc acc :mask mask)
+        (apply assoc acc (interleave (address-list (acc :mask) address) (repeat value)))))
     {:mask ""}
     mem*))
 
@@ -105,7 +104,7 @@
   (->> (dissoc result* :mask)
       vals
       (apply +)
-      ))
+      ))                                                    ; part2
 
 
 
