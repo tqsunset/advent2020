@@ -84,7 +84,7 @@
                               (update space4 xi yi zi wi))))))))))
 
 (comment
-  K(->> (loop [space4 space4
+  (->> (loop [space4 space4
              i 0]
         (if (= i 6)
           space4
